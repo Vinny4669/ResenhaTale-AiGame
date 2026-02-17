@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ResenhaTale: Extreme 👀</title>
+    <title>ResenhaTale: Sans Mode 👀</title>
     <style>
         @font-face {
             font-family: 'Determination';
@@ -24,13 +24,11 @@
             user-select: none;
         }
 
-        /* INIMIGO */
         #enemy-container { height: 180px; text-align: center; position: relative; }
         #enemy-img { width: 130px; transition: filter 0.1s; }
         .enemy-hp-bar { width: 160px; height: 12px; background: #333; border: 2px solid white; margin: 10px auto; }
         #enemy-hp-fill { width: 100%; height: 100%; background: #00ff00; transition: 0.3s; }
 
-        /* CAIXA DE BATALHA */
         #box {
             width: 400px; height: 180px;
             border: 5px solid white;
@@ -44,15 +42,16 @@
             display: none; z-index: 100;
         }
 
-        /* ATAQUES */
-        .bullet { position: absolute; background: white; pointer-events: none; }
+        /* Classes de Ataque */
+        .attack-obj { position: absolute; pointer-events: none; }
+        .bullet { background: white; }
         .orange { background: #ffa500 !important; box-shadow: 0 0 10px #ffa500; }
         .blue { background: #008cff !important; box-shadow: 0 0 10px #008cff; }
         
-        .blaster-warning { position: absolute; background: rgba(255, 255, 255, 0.2); border: 1px dashed white; pointer-events: none; }
-        .blaster-beam { position: absolute; background: white; box-shadow: 0 0 20px white; pointer-events: none; }
+        .blaster-warning { background: rgba(255, 255, 255, 0.2); border: 1px dashed white; }
+        .blaster-beam { background: white; box-shadow: 0 0 20px white; }
 
-        /* BARRA DE ATAQUE (SLIDER) */
+        /* Interface de Ataque */
         #attack-ui {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center;
@@ -69,17 +68,14 @@
             box-shadow: 0 0 10px white; left: 0;
         }
 
-        /* STATUS */
         #status { width: 400px; margin: 15px 0; display: flex; align-items: center; font-size: 20px;}
         .hp-bar-bg { width: 100px; height: 20px; background: red; margin: 0 10px; }
         #hp-fill { width: 100%; height: 100%; background: #ffff00; }
 
-        /* BOTÕES */
         .buttons { display: flex; gap: 10px; width: 420px; justify-content: space-between; }
         .btn { border: 2px solid #e27d31; color: #e27d31; padding: 8px; width: 95px; text-align: center; cursor: pointer; }
         .btn:hover { border-color: white; color: white; background: #e27d31; }
 
-        /* GAME OVER */
         #game-over {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: black; display: none; flex-direction: column;
@@ -111,14 +107,14 @@
 
     <div class="buttons">
         <div class="btn" onclick="startAttackMenu()">LUTAR</div>
-        <div class="btn" onclick="openMsg('* Você checa a Resenha.\n* Ela parece entediada.')">AGIR</div>
+        <div class="btn" onclick="openMsg('* Você checa a Resenha.')">AGIR</div>
         <div class="btn" onclick="useItem()">ITEM</div>
-        <div class="btn" onclick="openMsg('* A Resenha ignora seu perdão.')">POUPAR</div>
+        <div class="btn" onclick="openMsg('* A resenha não se importa.')">POUPAR</div>
     </div>
 
     <div id="game-over">
         <img src="https://i.imgur.com/u7f3RCH.png" style="width: 30px; margin-bottom: 20px;">
-        <h1 style="color: white; text-align: center;">VOCÊ ESTÁ MORTO.<br><span style="color:red; font-size: 20px;">MANTENHA A DETERMINAÇÃO...</span></h1>
+        <h1 style="color: white; text-align: center;">FIM DE JOGO.<br><span style="color:red; font-size: 20px;">MANTENHA-SE DETERMINADO...</span></h1>
         <button onclick="location.reload()" style="background:none; border:2px solid white; color:white; padding:10px; cursor:pointer;">REPETIR</button>
     </div>
 
@@ -138,6 +134,16 @@
         let soulX = 192, soulY = 82;
         let keys = {};
         let isMoving = false;
+        let activeIntervals = [];
+
+        function clearAllAttacks() {
+            // Remove todos os elementos de ataque
+            document.querySelectorAll('.attack-obj').forEach(el => el.remove());
+            // Para todos os intervalos ativos
+            activeIntervals.forEach(clearInterval);
+            activeIntervals = [];
+            soul.style.filter = "none"; // Reseta cor da alma
+        }
 
         function typeWriter(text, next) {
             gameState = 'typing';
@@ -154,14 +160,12 @@
             }, 30);
         }
 
-        typeWriter("* A Resenha te desafia.");
-
         function openMsg(msg) {
             if (gameState !== 'menu') return;
             typeWriter(msg, startEnemyTurn);
         }
 
-        // --- SISTEMA DE ATAQUE (BARRAATAQUE.PNG) ---
+        // --- SISTEMA DE ATAQUE JOGADOR ---
         let sliderPos = 0;
         let sliderActive = false;
 
@@ -169,186 +173,156 @@
             if (gameState !== 'menu') return;
             gameState = 'attacking';
             attackUi.style.display = 'flex';
-            sliderPos = 0;
-            sliderActive = true;
+            sliderPos = 0; sliderActive = true;
             animateSlider();
         }
 
         function animateSlider() {
             if (!sliderActive) return;
-            sliderPos += 6;
-            if (sliderPos > 370) {
-                stopAttack(0); // Errou se passar direto
-                return;
-            }
+            sliderPos += 7;
+            if (sliderPos > 370) { stopAttack(0); return; }
             sliderLine.style.left = sliderPos + 'px';
             requestAnimationFrame(animateSlider);
         }
 
         window.addEventListener('keydown', e => {
-            if ((e.key === 'z' || e.key === 'Enter') && sliderActive) {
-                stopAttack(sliderPos);
-            }
+            if ((e.key === 'z' || e.key === 'Enter') && sliderActive) stopAttack(sliderPos);
         });
 
         function stopAttack(pos) {
             sliderActive = false;
             attackUi.style.display = 'none';
-            
-            // Lógica baseada na sua imagem barraataque.png
-            // Centro (verde) é em aprox 190px (50% de 380px)
             let distToCenter = Math.abs(190 - pos);
-            let damage = 0;
-
-            if (distToCenter < 15) damage = 25;      // VERDE (Perfeito)
-            else if (distToCenter < 40) damage = 15; // AMARELO
-            else if (distToCenter < 80) damage = 8;  // LARANJA
-            else if (distToCenter < 150) damage = 3; // VERMELHO
-            else damage = 0;
-
+            let damage = distToCenter < 20 ? 25 : (distToCenter < 100 ? 10 : 0);
             enemyHp -= damage;
             updateEnemy();
-            typeWriter(`* Você causou ${damage} de dano!`, () => {
+            typeWriter(`* Dano causado: ${damage}!`, () => {
                 if (enemyHp <= 0) win(); else startEnemyTurn();
             });
         }
 
-        // --- ATAQUES DO INIMIGO ---
+        // --- TURNOS DA RESENHA ---
         function startEnemyTurn() {
+            clearAllAttacks();
             gameState = 'enemy_turn';
             dialogue.innerHTML = "";
             soul.style.display = 'block';
             soulX = 192; soulY = 82;
             
-            const patterns = [attackProjectiles, attackBlaster, attackWalls];
-            const chosen = patterns[Math.floor(Math.random() * patterns.length)];
+            const attacks = [rotatingBlaster, gravitySlam, attackWalls];
+            const chosen = attacks[Math.floor(Math.random() * attacks.length)];
             
             chosen();
-            setTimeout(() => {
-                if (gameState === 'enemy_turn') endTurn();
-            }, 6000);
+            const turnEnd = setTimeout(endTurn, 7000);
+            activeIntervals.push(turnEnd);
         }
 
-        // 1. ATAQUE QUADRADOS DIRECIONADOS
-        function attackProjectiles() {
-            let count = 0;
-            const interval = setInterval(() => {
-                if (gameState !== 'enemy_turn') return clearInterval(interval);
-                // Mira na posição atual do player
-                let targetX = soulX;
-                let targetY = soulY;
-                createBullet(190, -20, (targetX - 190)/30, (targetY + 20)/30, 15, 15);
-                count++;
-                if (count > 12) clearInterval(interval);
-            }, 400);
-        }
-
-        // 2. GASTER BLASTER (MIRA E ATIRA)
-        function attackBlaster() {
-            let count = 0;
-            const interval = setInterval(() => {
-                if (gameState !== 'enemy_turn') return clearInterval(interval);
-                
-                let isVertical = Math.random() > 0.5;
-                let warn = document.createElement('div');
-                warn.className = 'blaster-warning';
-                
-                if (isVertical) {
-                    let posX = soulX;
-                    warn.style.width = '40px'; warn.style.height = '180px';
-                    warn.style.left = posX + 'px'; warn.style.top = '0';
-                    box.appendChild(warn);
-                    setTimeout(() => {
-                        warn.remove();
-                        fireBeam(posX, 0, 40, 180);
-                    }, 800);
-                } else {
-                    let posY = soulY;
-                    warn.style.width = '400px'; warn.style.height = '40px';
-                    warn.style.left = '0'; warn.style.top = posY + 'px';
-                    box.appendChild(warn);
-                    setTimeout(() => {
-                        warn.remove();
-                        fireBeam(0, posY, 400, 40);
-                    }, 800);
-                }
-                count++;
-                if (count > 4) clearInterval(interval);
-            }, 1200);
-        }
-
-        function fireBeam(x, y, w, h) {
-            let beam = document.createElement('div');
-            beam.className = 'blaster-beam';
-            beam.style.left = x + 'px'; beam.style.top = y + 'px';
-            beam.style.width = w + 'px'; beam.style.height = h + 'px';
+        // 1. GASTER BLASTER ROTATIVO (O GIRO)
+        function rotatingBlaster() {
+            let angle = 0;
+            const beam = document.createElement('div');
+            beam.className = 'attack-obj blaster-beam';
+            beam.style.width = '600px'; beam.style.height = '40px';
+            beam.style.left = '50%'; beam.style.top = '50%';
+            beam.style.transformOrigin = '0 50%';
             box.appendChild(beam);
-            
-            // Dano do Beam
-            let check = setInterval(() => {
-                if (soulX < x + w && soulX + 16 > x && soulY < y + h && soulY + 16 > y) {
-                    takeDamage(2);
-                }
-            }, 50);
 
-            setTimeout(() => { beam.remove(); clearInterval(check); }, 400);
+            const rotate = setInterval(() => {
+                angle += 2;
+                beam.style.transform = `translate(-0%, -50%) rotate(${angle}deg)`;
+                
+                // Colisão rotacional (simplificada)
+                const sRect = soul.getBoundingClientRect();
+                const bRect = beam.getBoundingClientRect();
+                if (checkCollision(soul, beam)) takeDamage(1);
+            }, 20);
+            activeIntervals.push(rotate);
         }
 
-        // 3. PAREDES AZUIS E LARANJAS
-        function attackWalls() {
-            let count = 0;
-            const interval = setInterval(() => {
-                if (gameState !== 'enemy_turn') return clearInterval(interval);
+        // 2. GRAVITY SLAM (ALMA AZUL + ESPINHOS)
+        function gravitySlam() {
+            soul.style.filter = "hue-rotate(150deg)"; // Deixa a alma azul
+            let slams = 0;
+            const slamInterval = setInterval(() => {
+                if (slams >= 4) return clearInterval(slamInterval);
                 
+                // Escolhe uma direção para jogar o player
+                const dirs = ['top', 'bottom', 'left', 'right'];
+                const dir = dirs[Math.floor(Math.random() * dirs.length)];
+                
+                if (dir === 'top') soulY = 0;
+                if (dir === 'bottom') soulY = 164;
+                if (dir === 'left') soulX = 0;
+                if (dir === 'right') soulX = 384;
+                
+                updateSoulVisual();
+
+                // Cria o aviso do espinho
+                const warning = document.createElement('div');
+                warning.className = 'attack-obj blaster-warning';
+                if (dir === 'top' || dir === 'bottom') {
+                    warning.style.width = '400px'; warning.style.height = '30px';
+                    warning.style.left = '0'; warning.style.top = (dir==='top'?'0':'150px');
+                } else {
+                    warning.style.width = '30px'; warning.style.height = '180px';
+                    warning.style.top = '0'; warning.style.left = (dir==='left'?'0':'370px');
+                }
+                box.appendChild(warning);
+
+                // Delay para o espinho (Dá tempo de fugir!)
+                setTimeout(() => {
+                    warning.remove();
+                    const spike = document.createElement('div');
+                    spike.className = 'attack-obj bullet';
+                    spike.style.width = warning.style.width; spike.style.height = warning.style.height;
+                    spike.style.left = warning.style.left; spike.style.top = warning.style.top;
+                    box.appendChild(spike);
+                    
+                    // Checa hit
+                    if (checkCollision(soul, spike)) takeDamage(10);
+                    setTimeout(() => spike.remove(), 400);
+                }, 700);
+
+                slams++;
+            }, 1500);
+            activeIntervals.push(slamInterval);
+        }
+
+        // 3. PAREDES COLORIDAS
+        function attackWalls() {
+            const int = setInterval(() => {
                 let type = Math.random() > 0.5 ? 'blue' : 'orange';
-                let wall = document.createElement('div');
-                wall.className = 'bullet ' + type;
-                wall.style.width = '20px'; wall.style.height = '180px';
+                const wall = document.createElement('div');
+                wall.className = 'attack-obj bullet ' + type;
+                wall.style.width = '30px'; wall.style.height = '180px';
                 wall.style.left = '400px'; wall.style.top = '0';
                 box.appendChild(wall);
 
                 let wx = 400;
-                let move = setInterval(() => {
-                    wx -= 5;
-                    wall.style.left = wx + 'px';
-                    
-                    // Lógica de Cor:
-                    if (wx < soulX + 16 && wx + 20 > soulX) {
-                        if (type === 'blue' && isMoving) takeDamage(3); // Azul: Não se mexa
-                        if (type === 'orange' && !isMoving) takeDamage(3); // Laranja: Se mexa
+                const m = setInterval(() => {
+                    wx -= 6; wall.style.left = wx + 'px';
+                    if (checkCollision(soul, wall)) {
+                        if (type === 'blue' && isMoving) takeDamage(2);
+                        if (type === 'orange' && !isMoving) takeDamage(2);
                     }
-
-                    if (wx < -30) { wall.remove(); clearInterval(move); }
-                    if (gameState !== 'enemy_turn') { wall.remove(); clearInterval(move); }
+                    if (wx < -40) { wall.remove(); clearInterval(m); }
                 }, 20);
-
-                count++;
-                if (count > 6) clearInterval(interval);
-            }, 800);
+                activeIntervals.push(m);
+            }, 1000);
+            activeIntervals.push(int);
         }
 
-        function createBullet(x, y, vx, vy, w, h) {
-            const b = document.createElement('div');
-            b.className = 'bullet';
-            b.style.width = w+'px'; b.style.height = h+'px';
-            box.appendChild(b);
-            const m = setInterval(() => {
-                x+=vx; y+=vy;
-                b.style.left = x+'px'; b.style.top = y+'px';
-                if (x < soulX+14 && x+w > soulX && y < soulY+14 && y+h > soulY) takeDamage(2);
-                if (x<-50||x>450||y<-50||y>250||gameState!=='enemy_turn'){ b.remove(); clearInterval(m); }
-            }, 20);
+        function checkCollision(el1, el2) {
+            const r1 = el1.getBoundingClientRect();
+            const r2 = el2.getBoundingClientRect();
+            return !(r1.right < r2.left || r1.left > r2.right || r1.bottom < r2.top || r1.top > r2.bottom);
         }
 
         function takeDamage(amt) {
             playerHp -= amt;
-            updateUI();
-            if (playerHp <= 0) die();
-        }
-
-        function updateUI() {
             hpFill.style.width = (playerHp/maxHp*100) + "%";
             hpText.innerText = Math.max(0, Math.floor(playerHp)) + " / 50";
+            if (playerHp <= 0) die();
         }
 
         function updateEnemy() {
@@ -358,19 +332,22 @@
         }
 
         function endTurn() {
+            clearAllAttacks();
             gameState = 'menu';
             soul.style.display = 'none';
-            typeWriter("* A Resenha está perdendo a paciência.");
+            typeWriter("* Você sente seus pecados subindo pela espinha.");
         }
 
         function die() {
+            clearAllAttacks();
             gameState = 'dead';
             document.getElementById('game-over').style.display = 'flex';
         }
 
         function win() {
+            clearAllAttacks();
             gameState = 'win';
-            typeWriter("* VOCÊ VENCEU!\n* A resenha acabou por hoje.");
+            typeWriter("* VOCÊ VENCEU A RESENHA!");
             document.getElementById('enemy-img').style.opacity = '0';
         }
 
@@ -378,31 +355,33 @@
         window.addEventListener('keydown', e => { keys[e.key] = true; isMoving = true; });
         window.addEventListener('keyup', e => { 
             keys[e.key] = false; 
-            if (!keys['ArrowUp'] && !keys['ArrowDown'] && !keys['ArrowLeft'] && !keys['ArrowRight'] &&
-                !keys['w'] && !keys['s'] && !keys['a'] && !keys['d']) {
-                isMoving = false;
-            }
+            if (!Object.values(keys).some(v => v)) isMoving = false;
         });
+
+        function updateSoulVisual() {
+            soul.style.left = soulX + 'px';
+            soul.style.top = soulY + 'px';
+        }
 
         setInterval(() => {
             if (gameState === 'enemy_turn') {
-                const s = 3.5;
+                const s = 4;
                 if (keys['ArrowUp'] || keys['w']) soulY -= s;
                 if (keys['ArrowDown'] || keys['s']) soulY += s;
                 if (keys['ArrowLeft'] || keys['a']) soulX -= s;
                 if (keys['ArrowRight'] || keys['d']) soulX += s;
                 soulX = Math.max(0, Math.min(384, soulX));
                 soulY = Math.max(0, Math.min(164, soulY));
-                soul.style.left = soulX + 'px';
-                soul.style.top = soulY + 'px';
+                updateSoulVisual();
             }
         }, 20);
 
         function useItem() {
             if (gameState !== 'menu') return;
             playerHp = 50;
-            updateUI();
-            typeWriter("* Você tomou o Sucu do Istilitiru.\n* HP Restaurado!", startEnemyTurn);
+            hpFill.style.width = "100%";
+            hpText.innerText = "50 / 50";
+            typeWriter("* Tomou Sucu do Istilitiru. HP FULL!", startEnemyTurn);
         }
     </script>
 </body>
