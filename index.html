@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ResenhaTale 👀 - Battle System</title>
+    <title>ResenhaTale: Hard Mode 👀</title>
     <style>
+        @font-face {
+            font-family: 'Determination';
+            src: url('https://fonts.cdnfonts.com/s/15443/DeterminationMonoWebRegular.woff') format('woff');
+        }
+
         body {
             background-color: black;
             color: white;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Determination', 'Courier New', monospace;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -19,31 +24,27 @@
             user-select: none;
         }
 
-        /* Inimigo */
+        /* INIMIGO */
         #enemy-container {
-            height: 180px;
+            height: 200px;
             text-align: center;
-            margin-bottom: 10px;
+            position: relative;
         }
 
         #enemy-img {
-            width: 120px;
-            transition: 0.1s;
+            width: 140px;
+            transition: opacity 2s ease-out, filter 0.1s;
         }
 
-        .enemy-hp-container {
-            width: 150px;
-            height: 10px;
-            background: #333;
-            margin: 5px auto;
-            border: 1px solid white;
+        .enemy-hp-bar {
+            width: 150px; height: 12px; background: #333;
+            border: 2px solid white; margin: 10px auto;
         }
         #enemy-hp-fill { width: 100%; height: 100%; background: #00ff00; transition: 0.3s; }
 
-        /* Caixa de Batalha */
+        /* CAIXA DE BATALHA */
         #box {
-            width: 400px;
-            height: 160px;
+            width: 400px; height: 180px;
             border: 5px solid white;
             position: relative;
             background: black;
@@ -53,95 +54,119 @@
         }
 
         #soul {
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            display: none;
-            z-index: 100;
+            position: absolute; width: 16px; height: 16px;
+            display: none; z-index: 100;
         }
 
-        .bullet { position: absolute; background: white; pointer-events: none; }
+        .bullet { position: absolute; background: white; pointer-events: none; border-radius: 2px; }
 
-        /* Barra de Status */
-        #status {
-            width: 400px;
-            margin: 15px 0;
-            display: flex;
-            align-items: center;
-            font-size: 14px;
+        /* SISTEMA DE ATAQUE (SLIDER) */
+        #attack-slider-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center;
+        }
+        #slider-bg {
+            width: 350px; height: 120px; border: 4px solid #444;
+            background: url('https://i.imgur.com/8mX7N8I.png') center/cover; position: relative;
+        }
+        #slider-bar {
+            position: absolute; width: 12px; height: 100%; background: white;
+            box-shadow: 0 0 15px white; left: 0;
         }
 
-        .hp-bar-bg { width: 80px; height: 18px; background: red; margin: 0 10px; }
+        /* STATUS */
+        #status { width: 400px; margin: 15px 0; display: flex; align-items: center; }
+        .hp-bar-bg { width: 100px; height: 20px; background: red; margin: 0 10px; }
         #hp-fill { width: 100%; height: 100%; background: #ffff00; }
-        .poisoned { background: #800080 !important; } /* Cor roxa para veneno */
+        .poisoned { background: #800080 !important; }
 
-        /* Botões */
-        .buttons { display: flex; gap: 8px; width: 410px; justify-content: space-between; }
+        /* BOTÕES */
+        .buttons { display: flex; gap: 10px; width: 420px; justify-content: space-between; }
         .btn {
-            border: 2px solid #e27d31;
-            color: #e27d31;
-            padding: 6px;
-            width: 90px;
-            text-align: center;
-            cursor: pointer;
-            font-weight: bold;
+            border: 2px solid #e27d31; color: #e27d31;
+            padding: 8px; width: 95px; text-align: center; cursor: pointer;
         }
-        .btn:hover { background: #e27d31; color: white; }
+        .btn:hover, .btn.selected { border-color: white; color: white; background: #e27d31; }
 
-        #dialogue { font-size: 16px; line-height: 1.4; white-space: pre-wrap; }
-        .item-list { list-style: none; padding: 0; margin: 0; }
-        .item-list li { cursor: pointer; padding: 2px; }
-        .item-list li:hover { background: white; color: black; }
+        /* GAME OVER */
+        #game-over {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: black; display: none; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 1000;
+        }
+        #death-soul { width: 20px; margin-bottom: 20px; }
+        .stay-determined { color: white; text-align: center; font-size: 24px; animation: fadeIn 3s; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        #dialogue { font-size: 18px; line-height: 1.4; }
     </style>
 </head>
 <body>
 
     <div id="enemy-container">
-        <img src="resenha.png" id="enemy-img" alt="👀" onerror="this.src='https://emojicdn.elk.sh/👀?size=120'">
-        <div class="enemy-hp-container"><div id="enemy-hp-fill"></div></div>
-        <p id="enemy-label">RESENHA 👀</p>
+        <canvas id="dust-canvas" style="position:absolute; top:0; left:50%; transform:translateX(-50%); pointer-events:none;"></canvas>
+        <img src="resenha.png" id="enemy-img" alt="👀" onerror="this.src='https://emojicdn.elk.sh/👀?size=140'">
+        <div class="enemy-hp-bar"><div id="enemy-hp-fill"></div></div>
     </div>
 
     <div id="box">
         <div id="dialogue"></div>
         <img id="soul" src="https://i.imgur.com/u7f3RCH.png" alt="❤️">
+        
+        <!-- Sistema de Ataque Estilo Undertale -->
+        <div id="attack-slider-container">
+            <div id="slider-bg">
+                <div id="slider-bar"></div>
+            </div>
+        </div>
     </div>
 
     <div id="status">
-        VOCÊ  LV 19  HP <div class="hp-bar-bg"><div id="hp-fill"></div></div> <span id="hp-text">20 / 20</span>
+        VOCÊ  LV 19  HP <div class="hp-bar-bg"><div id="hp-fill"></div></div> <span id="hp-text">50 / 50</span>
     </div>
 
     <div class="buttons">
-        <div class="btn" onclick="menuAction('fight')">LUTAR</div>
-        <div class="btn" onclick="menuAction('act')">AGIR</div>
-        <div class="btn" onclick="menuAction('item')">ITEM</div>
-        <div class="btn" onclick="menuAction('mercy')">POUPAR</div>
+        <div class="btn" id="btn-fight" onclick="startAttackMiniGame()">LUTAR</div>
+        <div class="btn" onclick="openMenu('act')">AGIR</div>
+        <div class="btn" onclick="openMenu('item')">ITEM</div>
+        <div class="btn" onclick="openMenu('mercy')">POUPAR</div>
+    </div>
+
+    <!-- TELA DE MORTE -->
+    <div id="game-over">
+        <img id="death-soul" src="https://i.imgur.com/u7f3RCH.png">
+        <div class="stay-determined">
+            Parece que a resenha foi demais para você...<br><br>
+            <span style="color: #ff0000; font-size: 30px;">MANTENHA-SE DETERMINADO!</span><br><br>
+            <button onclick="location.reload()" style="background:none; border:2px solid white; color:white; padding:10px; cursor:pointer;">TENTAR NOVAMENTE</button>
+        </div>
     </div>
 
     <script>
-        const dialogue = document.getElementById('dialogue');
         const soul = document.getElementById('soul');
+        const box = document.getElementById('box');
+        const dialogue = document.getElementById('dialogue');
         const hpFill = document.getElementById('hp-fill');
         const hpText = document.getElementById('hp-text');
         const enemyHpFill = document.getElementById('enemy-hp-fill');
-        const box = document.getElementById('box');
+        const sliderContainer = document.getElementById('attack-slider-container');
+        const sliderBar = document.getElementById('slider-bar');
 
-        let playerHp = 20, maxHp = 20;
-        let enemyHp = 100, maxEnemyHp = 100;
-        let gameState = 'menu'; // menu, typing, item_select, enemy_turn, win
+        let playerHp = 50, maxHp = 50;
+        let enemyHp = 150, maxEnemyHp = 150;
+        let gameState = 'menu'; // menu, typing, enemy_turn, attacking, dead
         let soulX = 192, soulY = 72;
         let keys = {};
-        let currentAttack = 0;
-        let poisonTicks = 0;
+        let poison = 0;
 
-        // Inventário
         let inventory = [
-            { name: "Sucu do Istilitiru", heal: 25, msg: "* Você tomou o Sucu...\n* Sentiu o poder do estilo!" },
-            { name: "Chocolate", heal: 15, msg: "* Você comeu o chocolate.\n* Gosto de nostalgia." },
-            { name: "Bosta", heal: -5, poison: 5, msg: "* Por que você comeu isso?\n* Você se sente péssimo (Veneno!)" }
+            { name: "Sucu do Istilitiru", heal: 25 },
+            { name: "Chocolate", heal: 15 },
+            { name: "Bosta", heal: -10, poison: 8 }
         ];
 
-        function typeWriter(text, nextState = 'menu', callback = null) {
+        function typeWriter(text, callback) {
             gameState = 'typing';
             dialogue.innerHTML = "";
             let i = 0;
@@ -150,194 +175,225 @@
                 i++;
                 if (i >= text.length) {
                     clearInterval(interval);
-                    gameState = nextState;
+                    gameState = 'menu';
                     if (callback) callback();
                 }
             }, 30);
         }
 
-        typeWriter("* A resenha te encara fixamente.");
+        typeWriter("* A resenha 👀 te observa com desprezo.");
 
-        function menuAction(action) {
+        // SISTEMA DE ATAQUE (MINIGAME)
+        let sliderPos = 0;
+        let sliderDir = 1;
+        let sliderActive = false;
+
+        function startAttackMiniGame() {
             if (gameState !== 'menu') return;
-
-            if (action === 'fight') {
-                enemyHp -= 20;
-                updateEnemyHp();
-                typeWriter("* Você ataca com tudo!\n* A resenha perdeu 20 HP.", 'typing', () => {
-                    setTimeout(checkWinCondition, 1500);
-                });
-            } else if (action === 'item') {
-                showItems();
-            } else if (action === 'act') {
-                typeWriter("* Você tenta explicar a resenha.\n* Ninguém entendeu nada.");
-                setTimeout(startEnemyTurn, 2000);
-            } else {
-                typeWriter("* A resenha não aceita misericórdia.");
-                setTimeout(startEnemyTurn, 2000);
-            }
+            gameState = 'attacking';
+            sliderContainer.style.display = 'flex';
+            sliderPos = 0;
+            sliderActive = true;
+            animateSlider();
         }
 
-        function showItems() {
-            if (inventory.length === 0) {
-                typeWriter("* Você não tem nada.");
-                return;
+        function animateSlider() {
+            if (!sliderActive) return;
+            sliderPos += 5 * sliderDir;
+            if (sliderPos >= 340 || sliderPos <= 0) sliderDir *= -1;
+            sliderBar.style.left = sliderPos + 'px';
+            requestAnimationFrame(animateSlider);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'z' || e.key === 'Enter') {
+                if (gameState === 'attacking' && sliderActive) {
+                    sliderActive = false;
+                    calculateDamage();
+                }
             }
-            gameState = 'item_select';
-            dialogue.innerHTML = "<ul class='item-list'>";
-            inventory.forEach((item, index) => {
-                dialogue.innerHTML += `<li onclick="useItem(${index})">${item.name}</li>`;
+        });
+
+        function calculateDamage() {
+            // Quanto mais perto do meio (175px), mais dano.
+            let dist = Math.abs(175 - sliderPos);
+            let damage = 0;
+            
+            if (dist < 20) damage = 25; // Perfeito
+            else if (dist < 60) damage = 15; // Bom
+            else if (dist < 120) damage = 7; // Ruim
+            else damage = 0; // Errou
+
+            enemyHp -= damage;
+            updateEnemyUI();
+
+            sliderContainer.style.display = 'none';
+            typeWriter(`* Você desferiu ${damage} de dano!`, () => {
+                setTimeout(enemyHp <= 0 ? dieEnemy : startEnemyTurn, 1000);
             });
-            dialogue.innerHTML += "</ul>";
         }
 
-        function useItem(index) {
-            const item = inventory[index];
-            playerHp += item.heal;
-            if (item.poison) poisonTicks = item.poison;
-            
-            inventory.splice(index, 1);
-            updatePlayerHp();
-            
-            typeWriter(item.msg, 'typing', () => {
-                setTimeout(startEnemyTurn, 2000);
-            });
+        function updateEnemyUI() {
+            enemyHpFill.style.width = Math.max(0, (enemyHp / maxEnemyHp) * 100) + "%";
+            const img = document.getElementById('enemy-img');
+            img.style.filter = "invert(1)";
+            setTimeout(() => img.style.filter = "none", 100);
         }
 
-        function updateEnemyHp() {
-            const perc = (enemyHp / maxEnemyHp) * 100;
-            enemyHpFill.style.width = Math.max(0, perc) + "%";
-            document.getElementById('enemy-img').style.filter = "invert(1) sepia(1) saturate(5) hue-rotate(300deg)";
-            setTimeout(() => document.getElementById('enemy-img').style.filter = "none", 150);
-        }
-
-        function updatePlayerHp() {
-            if (playerHp > maxHp) playerHp = maxHp;
-            const perc = (playerHp / maxHp) * 100;
-            hpFill.style.width = Math.max(0, perc) + "%";
-            hpText.innerText = `${Math.floor(playerHp)} / ${maxHp}`;
-            
-            if (poisonTicks > 0) hpFill.classList.add('poisoned');
-            else hpFill.classList.remove('poisoned');
-
-            if (playerHp <= 0) {
-                alert("GAME OVER - A resenha foi longe demais.");
-                location.reload();
-            }
-        }
-
-        function checkWinCondition() {
-            if (enemyHp <= 0) {
-                gameState = 'win';
-                document.getElementById('enemy-img').style.opacity = "0";
-                typeWriter("* VOCÊ VENCEU A RESENHA!\n* O mundo está a salvo do tédio.", 'win');
-            } else {
-                startEnemyTurn();
-            }
-        }
-
-        // Sistema de Ataques
+        // TURNOS DO INIMIGO (DIFÍCEIS)
         function startEnemyTurn() {
             gameState = 'enemy_turn';
             dialogue.innerHTML = "";
             soul.style.display = 'block';
             soulX = 192; soulY = 72;
             
-            currentAttack = Math.floor(Math.random() * 3);
-            let duration = 5000;
-
-            const attackTimer = setTimeout(() => {
-                endEnemyTurn();
-            }, duration);
-
-            runAttackPattern(currentAttack);
+            let pattern = Math.floor(Math.random() * 3);
+            let timer = 0;
+            
+            const turnInterval = setInterval(() => {
+                timer++;
+                if (pattern === 0) attackFollower(); // Persegue o player
+                if (pattern === 1) attackWalls();    // Paredes rápidas
+                if (pattern === 2) attackChaos();    // Tudo junto
+                
+                if (timer > 20) {
+                    clearInterval(turnInterval);
+                    setTimeout(endEnemyTurn, 1500);
+                }
+            }, 400);
         }
 
-        function runAttackPattern(id) {
+        function attackFollower() { // TIROS QUE MIRAM NO PLAYER
             if (gameState !== 'enemy_turn') return;
+            createBullet(Math.random() > 0.5 ? 0 : 380, Math.random() * 150, (soulX - 200)/50, (soulY - 80)/50, 15, 15);
+        }
 
-            if (id === 0) { // Chuva de Resenha
-                const int = setInterval(() => {
-                    if (gameState !== 'enemy_turn') clearInterval(int);
-                    createBullet(Math.random() * 380, -20, 0, 4, 10, 10);
-                }, 300);
-            } else if (id === 1) { // Ataque Lateral (Barras)
-                const int = setInterval(() => {
-                    if (gameState !== 'enemy_turn') clearInterval(int);
-                    createBullet(-20, Math.random() * 140, 5, 0, 40, 10);
-                }, 600);
-            } else { // Círculo Explosivo
-                for (let i = 0; i < 8; i++) {
-                    let angle = (i / 8) * Math.PI * 2;
-                    createBullet(192, 72, Math.cos(angle) * 3, Math.sin(angle) * 3, 15, 15);
-                }
-            }
+        function attackWalls() { // PAREDES QUE EXIGEM MOVIMENTO CONSTANTE
+            if (gameState !== 'enemy_turn') return;
+            createBullet(-10, 0, 6, 0, 15, 180); // Parede vertical varrendo
+            createBullet(390, 0, -6, 0, 15, 180); 
+        }
+
+        function attackChaos() {
+             createBullet(Math.random() * 380, -10, (Math.random()-0.5)*4, 5, 10, 10);
         }
 
         function createBullet(x, y, vx, vy, w, h) {
             const b = document.createElement('div');
             b.className = 'bullet';
-            b.style.width = w + 'px';
-            b.style.height = h + 'px';
-            b.style.left = x + 'px';
-            b.style.top = y + 'px';
+            b.style.width = w + 'px'; b.style.height = h + 'px';
             box.appendChild(b);
 
             const move = setInterval(() => {
                 x += vx; y += vy;
-                b.style.left = x + 'px';
-                b.style.top = y + 'px';
+                b.style.left = x + 'px'; b.style.top = y + 'px';
 
-                // Colisão simples
                 if (x < soulX + 12 && x + w > soulX && y < soulY + 12 && y + h > soulY) {
-                    playerHp -= 1;
-                    updatePlayerHp();
-                    b.remove();
-                    clearInterval(move);
+                    takeDamage(1);
                 }
 
-                if (x < -50 || x > 450 || y < -50 || y > 200) {
-                    b.remove();
-                    clearInterval(move);
+                if (x < -100 || x > 500 || y < -100 || y > 300 || gameState !== 'enemy_turn') {
+                    b.remove(); clearInterval(move);
                 }
-                if (gameState !== 'enemy_turn') { b.remove(); clearInterval(move); }
             }, 20);
+        }
+
+        function takeDamage(amt) {
+            playerHp -= amt;
+            updatePlayerUI();
+            if (playerHp <= 0) triggerGameOver();
+        }
+
+        function updatePlayerUI() {
+            hpFill.style.width = (playerHp / maxHp * 100) + "%";
+            hpText.innerText = Math.ceil(playerHp) + " / " + maxHp;
+            if (poison > 0) hpFill.classList.add('poisoned');
+            else hpFill.classList.remove('poisoned');
         }
 
         function endEnemyTurn() {
             gameState = 'menu';
             soul.style.display = 'none';
-            typeWriter("* A resenha prepara algo novo...");
+            typeWriter("* Você sente seus pecados pesando nas costas.");
         }
 
-        // Loop de Veneno e Movimentação
-        setInterval(() => {
-            if (poisonTicks > 0) {
-                playerHp -= 0.5;
-                poisonTicks -= 0.1;
-                updatePlayerHp();
-            }
-        }, 1000);
+        // MORTE DO INIMIGO (POEIRA)
+        function dieEnemy() {
+            gameState = 'win';
+            const canvas = document.getElementById('dust-canvas');
+            const ctx = canvas.getContext('2d');
+            const img = document.getElementById('enemy-img');
+            canvas.width = 200; canvas.height = 200;
+            
+            img.style.opacity = '0';
+            
+            // Simulação simples de poeira
+            let particles = [];
+            for(let i=0; i<100; i++) particles.push({x:100, y:100, vx:Math.random()-0.5, vy:Math.random()-0.5, a:1});
 
+            const anim = setInterval(() => {
+                ctx.clearRect(0,0,200,200);
+                particles.forEach(p => {
+                    p.x += p.vx * 2; p.y += p.vy * 2; p.a -= 0.01;
+                    ctx.fillStyle = `rgba(150, 150, 150, ${p.a})`;
+                    ctx.fillRect(p.x, p.y, 3, 3);
+                });
+                if (particles[0].a <= 0) clearInterval(anim);
+            }, 20);
+
+            typeWriter("* A resenha se desfez em poeira.\n* Você venceu.");
+        }
+
+        function triggerGameOver() {
+            gameState = 'dead';
+            document.getElementById('game-over').style.display = 'flex';
+        }
+
+        // CONTROLES E LOOP
         window.addEventListener('keydown', e => keys[e.key] = true);
         window.addEventListener('keyup', e => keys[e.key] = false);
 
-        function gameLoop() {
+        function openMenu(m) {
+            if (gameState !== 'menu') return;
+            if (m === 'item') {
+                gameState = 'item_select';
+                dialogue.innerHTML = "ITENS:<br>";
+                inventory.forEach((it, i) => {
+                    dialogue.innerHTML += `<div onclick="useItem(${i})">> ${it.name}</div>`;
+                });
+            } else {
+                typeWriter("* Ação indisponível agora.");
+            }
+        }
+
+        function useItem(i) {
+            const it = inventory[i];
+            playerHp += it.heal;
+            if (it.poison) poison = it.poison;
+            inventory.splice(i, 1);
+            updatePlayerUI();
+            typeWriter(`* Você usou ${it.name}.`, startEnemyTurn);
+        }
+
+        setInterval(() => {
             if (gameState === 'enemy_turn') {
-                const speed = 3;
+                const speed = 3.5;
                 if (keys['ArrowUp'] || keys['w']) soulY -= speed;
                 if (keys['ArrowDown'] || keys['s']) soulY += speed;
                 if (keys['ArrowLeft'] || keys['a']) soulX -= speed;
                 if (keys['ArrowRight'] || keys['d']) soulX += speed;
-
                 soulX = Math.max(0, Math.min(384, soulX));
-                soulY = Math.max(0, Math.min(144, soulY));
+                soulY = Math.max(0, Math.min(164, soulY));
                 soul.style.left = soulX + 'px';
                 soul.style.top = soulY + 'px';
             }
-            requestAnimationFrame(gameLoop);
-        }
-        gameLoop();
+            if (poison > 0) {
+                playerHp -= 0.1;
+                poison -= 0.1;
+                updatePlayerUI();
+            }
+        }, 20);
+
     </script>
 </body>
 </html>
