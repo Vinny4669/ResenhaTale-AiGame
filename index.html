@@ -3,12 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resenha Clicker 👀</title>
+    <title>Jujutsu Shenanigans Clicker 🤞</title>
     <style>
+        :root {
+            --primary: #ff0040;
+            --secondary: #7000ff;
+            --bg: #0a0a0a;
+        }
+
         body {
-            background-color: #121212;
+            background-color: var(--bg);
             color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Courier New', Courier, monospace;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -16,179 +22,241 @@
             height: 100vh;
             margin: 0;
             overflow: hidden;
-            user-select: none;
+            transition: background 0.5s;
         }
 
-        .container {
+        /* Efeito de Expansão de Domínio */
+        body.domain-active {
+            background: radial-gradient(circle, #20002c 0%, #000000 100%);
+            animation: shake 0.2s infinite;
+        }
+
+        .hud {
+            position: absolute;
+            top: 20px;
             text-align: center;
         }
 
-        h1 { margin-bottom: 10px; color: #00ff88; }
-        
-        #score-container {
-            font-size: 2rem;
-            margin-bottom: 20px;
+        #kos-count {
+            font-size: 3rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px var(--primary);
         }
 
-        /* Área da Imagem Clicker */
-        #click-area {
+        /* Área de Combate */
+        .combat-area {
             position: relative;
-            cursor: pointer;
-            transition: transform 0.1s;
+            cursor: crosshair;
         }
 
-        #click-area:active {
-            transform: scale(0.95);
-        }
-
-        #resenha-img {
-            width: 200px;
-            height: 200px;
+        #char-img {
+            width: 250px;
+            height: 250px;
             object-fit: contain;
-            filter: drop-shadow(0 0 10px #00ff88);
+            transition: transform 0.1s, filter 0.3s;
+            filter: drop-shadow(0 0 5px white);
         }
 
-        /* Loja de Upgrades */
-        .shop {
-            margin-top: 30px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
+        #char-img:active {
+            transform: scale(0.9) rotate(-5deg);
         }
 
-        .upgrade-btn {
-            background: #1e1e1e;
-            border: 2px solid #333;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .upgrade-btn:hover:not(:disabled) {
-            border-color: #00ff88;
-            background: #252525;
-        }
-
-        .upgrade-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .stats {
+        /* Barra de Despertar (Awakening) */
+        .ult-bar-container {
+            width: 300px;
+            height: 20px;
+            background: #222;
+            border: 2px solid #444;
             margin-top: 20px;
-            font-size: 0.9rem;
-            color: #888;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #ult-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.3s;
+        }
+
+        /* Loja e Golpes */
+        .skills {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .skill-btn {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: white;
+            padding: 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 0.8rem;
+        }
+
+        .skill-btn:hover:not(:disabled) {
+            background: #333;
+            border-color: var(--primary);
+        }
+
+        .skill-btn:disabled {
+            opacity: 0.3;
+            filter: grayscale(1);
+        }
+
+        #domain-btn {
+            grid-column: span 2;
+            background: var(--secondary);
+            font-weight: bold;
+            display: none;
+        }
+
+        /* Animações */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px); }
+            50% { transform: translate(-1px, -2px); }
+            100% { transform: translate(1px, 1px); }
+        }
+
+        .hit-text {
+            position: absolute;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1.5rem;
+            pointer-events: none;
+            animation: floatUp 0.5s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            to { transform: translateY(-100px); opacity: 0; }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Resenha Clicker 👀</h1>
-        <div id="score-container">
-            <span id="score">0</span> Pontos de Resenha
-        </div>
+    <div class="hud">
+        <div>KOs (PONTOS)</div>
+        <div id="kos-count">0</div>
+        <div>Dano por Clique: <span id="dmg-val">1</span></div>
+    </div>
 
-        <div id="click-area" onclick="handleMainClick(event)">
-            <!-- Se o arquivo resenha.png não existir, ele mostra o emoji de reserva -->
-            <img src="resenha.png" id="resenha-img" alt="👀" onerror="this.src='https://emojicdn.elk.sh/👀?size=200'">
-        </div>
+    <div class="combat-area" onclick="attack(event)">
+        <img src="resenha.png" id="char-img" alt="🤞" onerror="this.src='https://emojicdn.elk.sh/🧙‍♂️?size=250'">
+    </div>
 
-        <div class="stats">
-            Ganho por clique: <span id="per-click">1</span> | Automático: <span id="per-sec">0</span>/s
-        </div>
+    <div class="ult-bar-container">
+        <div id="ult-bar"></div>
+    </div>
+    <div style="font-size: 10px; margin-top: 5px;">BARRA DE DESPERTAR</div>
 
-        <div class="shop">
-            <button class="upgrade-btn" id="up1" onclick="buyUpgrade(1)">
-                📱 Grupo de Zap (+1 p/ clique)<br>Custo: <span id="cost1">10</span>
-            </button>
-            <button class="upgrade-btn" id="up2" onclick="buyUpgrade(2)">
-                🔊 Caixa de Som (+1 p/ seg)<br>Custo: <span id="cost2">50</span>
-            </button>
-            <button class="upgrade-btn" id="up3" onclick="buyUpgrade(3)">
-                🥩 Churrasqueiro (+10 p/ seg)<br>Custo: <span id="cost3">250</span>
-            </button>
-        </div>
+    <div class="skills">
+        <button class="skill-btn" id="btn-1" onclick="buySkill(1)">
+            👊 Combo Básico<br>Custo: 15 KOs
+        </button>
+        <button class="skill-btn" id="btn-2" onclick="buySkill(2)">
+            🔴 Reversão Vermelha<br>Custo: 100 KOs
+        </button>
+        <button class="skill-btn" id="btn-3" onclick="buySkill(3)">
+            🔵 Lapso Azul<br>Custo: 500 KOs
+        </button>
+        <button class="skill-btn" id="btn-4" onclick="buySkill(4)">
+            ⚡ Black Flash<br>Custo: 2000 KOs
+        </button>
+        <button class="skill-btn" id="domain-btn" onclick="activateDomain()">
+            🤞 EXPANSÃO DE DOMÍNIO
+        </button>
     </div>
 
     <script>
-        let score = 0;
-        let pointsPerClick = 1;
-        let pointsPerSecond = 0;
+        let kos = 0;
+        let damage = 1;
+        let autoDmg = 0;
+        let awakening = 0;
+        let isDomainActive = false;
 
-        let costs = { 1: 10, 2: 50, 3: 250 };
-        let amounts = { 1: 0, 2: 0, 3: 0 };
+        const costs = { 1: 15, 2: 100, 3: 500, 4: 2000 };
 
-        function updateDisplay() {
-            document.getElementById('score').innerText = Math.floor(score);
-            document.getElementById('per-click').innerText = pointsPerClick;
-            document.getElementById('per-sec').innerText = pointsPerSecond;
+        function updateUI() {
+            document.getElementById('kos-count').innerText = Math.floor(kos);
+            document.getElementById('dmg-val').innerText = damage;
+            document.getElementById('ult-bar').style.width = awakening + "%";
+
+            // Mostrar botão de Domínio se a barra encher
+            if (awakening >= 100) {
+                document.getElementById('domain-btn').style.display = 'block';
+            }
+
+            // Gerenciar botões
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById('btn-' + i).disabled = kos < costs[i];
+            }
+        }
+
+        function attack(e) {
+            let multiplier = isDomainActive ? 5 : 1;
+            let finalDmg = damage * multiplier;
             
-            // Ativar/Desativar botões da loja
-            for (let i = 1; i <= 3; i++) {
-                let btn = document.getElementById('up' + i);
-                btn.disabled = score < costs[i];
-                document.getElementById('cost' + i).innerText = costs[i];
+            kos += finalDmg;
+            
+            if (awakening < 100) {
+                awakening += 0.5;
             }
+
+            createHitText(e.clientX, e.clientY, finalDmg);
+            updateUI();
         }
 
-        function handleMainClick(event) {
-            score += pointsPerClick;
-            createFloatingText(event.clientX, event.clientY, "+" + pointsPerClick);
-            updateDisplay();
+        function createHitText(x, y, txt) {
+            const div = document.createElement('div');
+            div.className = 'hit-text';
+            div.style.left = x + 'px';
+            div.style.top = y + 'px';
+            div.innerText = isDomainActive ? "CRITICAL!" : "HIT!";
+            if (isDomainActive) div.style.color = "#7000ff";
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 500);
         }
 
-        function buyUpgrade(id) {
-            if (score >= costs[id]) {
-                score -= costs[id];
-                amounts[id]++;
+        function buySkill(id) {
+            if (kos >= costs[id]) {
+                kos -= costs[id];
+                if (id === 1) damage += 1;
+                if (id === 2) autoDmg += 2;
+                if (id === 3) damage += 10;
+                if (id === 4) autoDmg += 50;
                 
-                if (id === 1) pointsPerClick += 1;
-                if (id === 2) pointsPerSecond += 1;
-                if (id === 3) pointsPerSecond += 10;
-
-                costs[id] = Math.ceil(costs[id] * 1.5);
-                updateDisplay();
+                costs[id] = Math.ceil(costs[id] * 1.6);
+                updateUI();
             }
         }
 
-        // Sistema de pontos automáticos
+        function activateDomain() {
+            isDomainActive = true;
+            awakening = 0;
+            document.getElementById('domain-btn').style.display = 'none';
+            document.body.classList.add('domain-active');
+            
+            // Duração do domínio: 10 segundos
+            setTimeout(() => {
+                isDomainActive = false;
+                document.body.classList.remove('domain-active');
+                updateUI();
+            }, 10000);
+        }
+
+        // Dano automático (Cursed Energy)
         setInterval(() => {
-            if (pointsPerSecond > 0) {
-                score += pointsPerSecond / 10; // Atualiza a cada 100ms para suavidade
-                updateDisplay();
+            if (autoDmg > 0) {
+                let mult = isDomainActive ? 5 : 1;
+                kos += (autoDmg * mult) / 10;
+                updateUI();
             }
         }, 100);
 
-        // Efeito visual de texto subindo ao clicar
-        function createFloatingText(x, y, text) {
-            const el = document.createElement('div');
-            el.innerText = text;
-            el.style.position = 'fixed';
-            el.style.left = x + 'px';
-            el.style.top = y + 'px';
-            el.style.color = '#00ff88';
-            el.style.fontWeight = 'bold';
-            el.style.pointerEvents = 'none';
-            el.style.animation = 'floatUp 0.8s ease-out forwards';
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 800);
-        }
-
-        // CSS da animação (injetado via JS para manter arquivo único)
-        const style = document.createElement('style');
-        style.innerHTML = `
-            @keyframes floatUp {
-                0% { transform: translateY(0); opacity: 1; }
-                100% { transform: translateY(-50px); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
-
-        updateDisplay();
+        updateUI();
     </script>
 </body>
 </html>
