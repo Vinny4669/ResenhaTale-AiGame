@@ -3,7 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ResenhaTale: Neon Edition 👀</title>
+    <title>ResenhaTale: o mouse** (`pointer-events: none`). É impossível clicar, não importa o quão rápido você seja.
+
+Também corrigi o sistema de diálogos para limpar qualquer texto anterior antes de começar um novo, evitando que as frases se atropelem.
+
+### O Código Completo (index.html)
+
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResenhaTale: Anti-Bug Neon 👀</title>
     <style>
         @font-face {
             font-family: 'Determination';
@@ -25,19 +37,43 @@
         }
 
         /* INIMIGO */
+        #enemy-container { height: 180px; text-align Anti-Bug Edition 👀</title>
+    <style>
+        @font-face {
+            font-family: 'Determination';
+            src: url('https://fonts.cdnfonts.com/s/15443/DeterminationMonoWebRegular.woff') format('woff');
+        }
+
+        body {
+            background-color: black;
+            color: white;
+            font-family: 'Determination', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            user-select: none;
+        }
+
         #enemy-container { height: 180px; text-align: center; }
-        #enemy-img { width: 120px; transition: filter 0.1s, opacity 0.5s; }
+        #enemy-img { width: 120px; transition: 0.1s; }
         .enemy-hp-bar { width: 160px; height: 12px; background: #333; border: 2px solid white; margin: 10px auto; }
         #enemy-hp-fill { width: 100%; height: 100%; background: #00ff00; transition: 0.3s; }
 
-        /* CAIXA DE BATALHA */
         #box {
             width: 400px; height: 180px;
             border: 5px solid white;
             position: relative;
             background: black;
-            overflow: hidden;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+            overflow: center; }
+        #enemy-img { width: 120px; transition: 0.2s; }
+        .enemy-hp-bar { width: 160px; height: 12px; background: #333; border: 2px solid white; margin: 10px auto; }
+        #enemy-hp-fill { width: 100%; height: 100%; background: #00ff00; transition: 0.3s; }
+
+        /* CA: hidden;
         }
 
         #soul {
@@ -45,130 +81,277 @@
             display: none; z-index: 100;
         }
 
-        /* EFEITOS NEON E ATAQUES */
-        .attack-obj { position: absolute; pointer-events: none; box-sizing: border-box; }
-        
-        /* Paredes Neon */
-        .blue { 
-            background: #008cff; 
-            box-shadow: 0 0 20px #008cff, 0 0 40px #008cff;
-            border: 1px solid white;
-        }
-        .orange { 
-            background: #ffa500; 
-            box-shadow: 0 0 20px #ffa500, 0 0 40px #ffa500;
-            border: 1px solid white;
+        /* OBJETOS DE ATAQUE NEON */
+        .attack-obj { position: absolute; pointer-events: none; }
+        .blue { background: #008cff; box-shadow: 0 0 20px #008cff; border: 1px solid white; }
+        .orangeIXA DE BATALHA */
+        #box {
+            width: 400px; height: { background: #ffa500; box-shadow: 0 0 20px #ffa5 180px;
+            border: 5px solid white;
+            position: relative;
+            00; border: 1px solid white; }
+
+        #rotating-beam {
+            position: absolute; left:background: black;
+            overflow: hidden;
         }
 
-        /* Laser Giratório */
-        #rotating-beam {
-            position: absolute;
-            left: 50%; top: 50%;
-            width: 600px; height: 30px;
+        #soul {
+            position: absolute; 50%; top: 50%;
+            width: 600px; height: 30px; width: 16px; height: 16px;
+            display: none; z-index:
             transform: translate(-50%, -50%) rotate(0deg);
-            display: none;
-            z-index: 50;
+            display: none; 100;
+        }
+
+        /* ATAQUES NEON */
+        .attack-obj { position: absolute z-index: 50;
+        }
+        .beam-warning { border: 2px dashed; pointer-events: none; }
+        .blue { background: #008cff; box-shadow: white; background: rgba(255,255,255,0.1); }
+ 0 0 20px #008cff; border: 1px solid white; }
+        .orange { background: #ffa500; box-shadow: 0 0 20        .beam-active { background: white; box-shadow: 0 0 40px #00ff88; }
+
+        .blaster-warning { border: 2px dashed white; background: rgba(2px #ffa500; border: 1px solid white; }
+
+        #rotating-beam {
+55, 255, 255, 0.1); }
+        .spike-attack { background: white; box-shadow: 0 0 20px white; }
+
+        /* UI E STATUS */
+        #status { width: 400px; margin: 15px 0; display: flex; align-items: center; font-size: 20px; }
+        .hp-bar-bg { width: 100px; height: 20px; background: red; margin: 0 10px; }
+        #hp-fill { width: 100%; height: 100%; background: #ffff00; }
+
+        .buttons { display: flex; gap: 10px; width: 420px; justify-content: space-between; }
+        .btn { 
+            border: 2px solid #e27d31; color: #e27d31; 
+            padding: 8px; width: 95px; text-align: center; 
+            cursor: pointer; transition: 0.2s;
+        }
+        /* Efeito visual quando o botão está travado */
+        .disabled { opacity: 0.3; cursor: default; filter: grayscale(1); }            position: absolute; left: 50%; top: 50%; width: 600px; height: 30px;
+            transform: translate(-50%, -50%) rotate(0deg); display: none; z-index: 50;
         }
         .beam-warning { border: 2px dashed white; background: rgba(255,255,255,0.1); }
-        .beam-active { 
-            background: white; 
-            box-shadow: 0 0 30px white, 0 0 60px #00ff88; 
-            border: none;
-        }
+        .beam-active { background: white; box-shadow: 0 0 40px #00ff88; }
 
-        /* Avisos de Slam */
         .blaster-warning { border: 2px dashed white; background: rgba(255, 255, 255, 0.1); }
         .spike-attack { background: white; box-shadow: 0 0 20px white; }
 
-        /* UI */
+        /* UI E BOTÕES */
         #status { width: 400px; margin: 15px 0; display: flex; align-items: center; font-size: 20px; }
         .hp-bar-bg { width: 100px; height: 20px; background: red; margin: 0 10px; }
-        #hp-fill { width: 100%; height: 100%; background: #ffff00; box-shadow: 0 0 10px #ffff00; }
+        #hp-fill { width: 100%; height: 100%; background: #ffff00; transition: 0.
+        .btn:hover:not(.disabled) { border-color: white; color: white; background: #1s; }
 
-        .buttons { display: flex; gap: 10px; width: 420px; justify-content: space-between; }
-        .btn { border: 2px solid #e27d31; color: #e27d31; padding: 8px; width: 95px; text-align: center; cursor: pointer; transition: 0.2s; }
-        .btn:hover { border-color: white; color: white; background: #e27d31; box-shadow: 0 0 10px #e27d31; }
+        /* TRAVA DE BOTÕES */
+        .buttons-container { 
+            display:e27d31; }
 
-        /* ATAQUE SLIDER */
+        /* SLIDER DE ATAQUE */
         #attack-ui {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center;
+             flex; gap: 10px; width: 420px; justify-content: space-betweenposition: absolute; top: 0; left: 0; width: 100%; height: ; 
+            transition: opacity 0.3s;
+        }
+        /* Classe que impede o clique */100%;
+            background: rgba(0,0,0,0.95); display: none
+        .locked { 
+            pointer-events: none !important; 
+            opacity: 0.6; align-items: center; justify-content: center;
         }
         #slider-container {
             width: 380px; height: 120px;
-            background: url('barraataque.png') no-repeat center;
-            background-size: 100% 100%;
+            background: url('barraataque; 
+            filter: grayscale(0.5);
+        }
+
+        .btn { border: 2px.png') no-repeat center;
+            background-size: 100% 100%; solid #e27d31; color: #e27d31; padding: 8px; width: 95px; text-align: center; cursor: pointer; }
+        .btn:hover { border
             position: relative;
         }
-        #slider-line { position: absolute; width: 8px; height: 100%; background: white; box-shadow: 0 0 15px white; left: 0; }
+        #slider-line { position: absolute; width: 8px; height: 100%; background: white; box-shadow: 0 0 15px white-color: white; color: white; background: #e27d31; }
+
+        /* ATAQUE SLIDER */
+        #attack-ui {
+            position: absolute; top: 0; left:; }
 
         #game-over {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: black; display: none; flex-direction: column;
+            position: fixed; top: 0; left: 0; width 0; width: 100%; height: 100%;
+            background: rgba(0: 100%; height: 100%;
+            background: black; display: none; flex,0,0,0.9); display: none; align-items: center; justify-content: center-direction: column;
             align-items: center; justify-content: center; z-index: 1000;
         }
     </style>
 </head>
 <body>
 
-    <div id="enemy-container">
-        <img src="resenha.png" id="enemy-img" alt="👀" onerror="this.src='https://emojicdn.elk.sh/👀?size=120'">
-        <div class="enemy-hp-bar"><div id="enemy-hp-fill"></div></div>
+    <div id;
+        }
+        #slider-container { width: 380px; height: 12="enemy-container">
+        <img src="resenha.png" id="enemy-img" alt0px; background: url('barraataque.png') no-repeat center/100% 100%;="👀" onerror="this.src='https://emojicdn.elk.sh/👀?size= position: relative; }
+        #slider-line { position: absolute; width: 8px; height: 120'">
+        <div class="enemy-hp-bar"><div id="enemy-hp-fill100%; background: white; box-shadow: 0 0 15px white; left: 0;"></div></div>
     </div>
 
     <div id="box">
         <div id="dialogue" style="padding: 15px; font-size: 18px;"></div>
-        <img id="soul" src="https://i.imgur.com/u7f3RCH.png" alt="❤️">
+        <img id=" }
+
+        #game-over {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: black; display: none; flexsoul" src="https://i.imgur.com/u7f3RCH.png" alt="❤️">
         <div id="rotating-beam" class="attack-obj"></div>
         
-        <div id="attack-ui">
-            <div id="slider-container"><div id="slider-line"></div></div>
+        <div-direction: column;
+            align-items: center; justify-content: center; z-index: 10 id="attack-ui">
+            <div id="slider-container"><div id="slider-line"></div>00;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="enemy</div>
         </div>
     </div>
 
     <div id="status">
-        PLAYER  HP <div class="hp-bar-bg"><div id="hp-fill"></div></div> <span id="hp-text">50 / 50</span>
+        PLAYER  HP <div class="-container">
+        <img src="resenha.png" id="enemy-img" alt="👀" onerror="this.src='https://emojicdn.elk.sh/👀?size=12hp-bar-bg"><div id="hp-fill"></div></div> <span id="hp-text">50'">
+        <div class="enemy-hp-bar"><div id="enemy-hp-fill"></div>0 / 50</span>
     </div>
 
     <div class="buttons">
-        <div class="btn" onclick="startAttackMenu()">LUTAR</div>
-        <div class="btn" onclick="openMsg('* Você checa a Resenha.')">AGIR</div>
-        <div class="btn" onclick="useItem()">ITEM</div>
-        <div class="btn" onclick="openMsg('* Sem piedade.')">POUPAR</div>
+        <div class="btn</div>
     </div>
 
+    <div id="box">
+        <div id="dialogue" style="padding" id="btn-fight" onclick="handleButtonClick('fight')">LUTAR</div>
+        <div class="btn" id: 15px; font-size: 18px;"></div>
+        <img id="soul"="btn-act" onclick="handleButtonClick('act')">AGIR</div>
+        <div class="btn" src="https://i.imgur.com/u7f3RCH.png" alt="❤️">
+ id="btn-item" onclick="handleButtonClick('item')">ITEM</div>
+        <div class="btn"        <div id="rotating-beam" class="attack-obj"></div>
+        
+        <div id=" id="btn-mercy" onclick="handleButtonClick('mercy')">POUPAR</div>
+    </div>
+
+attack-ui">
+            <div id="slider-container"><div id="slider-line"></div></div>
     <div id="game-over">
-        <h1 style="color:red; font-size: 40px;">FIM DE JOGO</h1>
-        <p style="color:white;">Mantenha sua determinação...</p>
-        <button onclick="location.reload()" style="background:none; border:2px solid white; color:white; padding:10px; cursor:pointer; font-family: 'Determination';">TENTAR DENOVO</button>
+        <h1 style="color:red; font-size:        </div>
+    </div>
+
+    <div id="status">
+        PLAYER  HP <div class="hp- 40px;">FIM DE JOGO</h1>
+        <button onclick="location.reload()" style="backgroundbar-bg"><div id="hp-fill"></div></div> <span id="hp-text">50 /:none; border:2px solid white; color:white; padding:10px; cursor:pointer;"> 50</span>
+    </div>
+
+    <div class="buttons-container" id="btns">
+        <divREPETIR</button>
     </div>
 
     <script>
         const soul = document.getElementById('soul');
-        const box = document.getElementById('box');
+ class="btn" onclick="startAttackMenu()">LUTAR</div>
+        <div class="btn" onclick="open        const box = document.getElementById('box');
         const dialogue = document.getElementById('dialogue');
-        const hpFill = document.getElementById('hp-fill');
-        const hpText = document.getElementById('hp-text');
+        Msg('* Você checa a Resenha.')">AGIR</div>
+        <div class="btn" onclick="const hpFill = document.getElementById('hp-fill');
+        const hpText = document.getElementById('hp-useItem()">ITEM</div>
+        <div class="btn" onclick="openMsg('* Sem perdão.')">POtext');
         const enemyHpFill = document.getElementById('enemy-hp-fill');
-        const rotatingBeam = document.getElementById('rotating-beam');
-        const sliderLine = document.getElementById('slider-line');
+        const rotatingBeamUPAR</div>
+    </div>
 
-        let playerHp = 50, maxHp = 50;
+    <div id="game-over">
+        <h1 style="color = document.getElementById('rotating-beam');
+        const sliderLine = document.getElementById('slider-line');
+:red; font-size: 40px;">FIM DE JOGO</h1>
+        <button onclick="        const attackUi = document.getElementById('attack-ui');
+
+        let playerHp = 50, maxHp = location.reload()" style="background:none; border:2px solid white; color:white; padding:150;
         let enemyHp = 150, maxEnemyHp = 150;
-        let gameState = 'typing'; // Começa em typing para o diálogo inicial
-        let soulX = 192, soulY = 82;
+0px; cursor:pointer;">REPETIR</button>
+    </div>
+
+    <script>
+        const soul        let gameState = 'typing'; 
+        let soulX = 192, soulY = 82; = document.getElementById('soul');
+        const dialogue = document.getElementById('dialogue');
+        const hpFill = document.
         let keys = {};
         let isMoving = false;
         let activeIntervals = [];
 
-        // Inicialização
+        // IngetElementById('hp-fill');
+        const hpText = document.getElementById('hp-text');
+        const enemyício
         window.onload = () => {
-            typeWriter("* A resenha 👀 te encara silenciosamente.\n* O ar está frio.");
+            updateButtonVisuals();
+            typeWriter("* A resenha 👀HpFill = document.getElementById('enemy-hp-fill');
+        const rotatingBeam = document.getElementById('rotating-beam');
+        const btnsContainer = document.getElementById('btns');
+        const sliderLine = document.getElementById('slider-line');
+
+        let playerHp = 50, maxHp = 50;
+        let enemyHp = 150, maxEnemyHp = 150;
+        let gameState = 'typing'; 
+        let soulX = 192, soulY = 82;
+        let keys = {};
+        let isMoving = false;
+        let activeIntervals = [];
+        let typingInterval = null;
+
+        // --- TRAVA DE SEGURANÇA ---
+        function setGameState(newState) {
+             te encara...\n* Você sente que terá um tempo difícil.");
+        };
+
+        // TRAVA ANTI-SPAM
+        function canInteract() {
+            return gameState === 'menu';
+        }
+
+        function updateButtonVisuals() {
+            const btns = document.querySelectorAll('.btn');
+            btns.forEach(btn => {
+                if (gameState === 'menu') btn.classList.remove('disabled');
+                else btn.classList.add('disabled');
+            });
+        }
+
+        function handleButtonClick(action) {
+            if (!canInteract()) return;
+            
+            if (action === 'fight') startAttackMiniGame();
+            else if (action === 'act') openMsg("*gameState = newState;
+            if (gameState === 'menu') {
+                btnsContainer.classList.remove('locked');
+            } else {
+                btnsContainer.classList.add('locked');
+            }
+        }
+
+        window.onload = () => {
+            setGameState('typing');
+            typeWriter("* A resenha 👀 te encara...\n* Você sente seus pecados.");
         };
 
         function clearAllAttacks() {
             document.querySelectorAll('.attack-obj:not(#rotating-beam)').forEach(el => el.remove());
-            activeIntervals.forEach(clearInterval);
+            activeInterval Você checou a Resenha.\n* Ela não parece querer conversar.");
+            else if (action === 'item') useItem();
+            else if (action === 'mercy') openMsg("* A resenha recusa seu perdão.");
+        }
+
+        function typeWriter(text, next) {
+            gameState = 'typing';
+            updateButtonVisuals();
+            dialogue.innerHTML = "";
+            let i = 0;
+            const interval =s.forEach(clearInterval);
             activeIntervals = [];
             rotatingBeam.style.display = 'none';
             rotatingBeam.className = 'attack-obj';
@@ -176,14 +359,15 @@
         }
 
         function typeWriter(text, next) {
-            gameState = 'typing';
+            if (typingInterval) clearInterval(typingInterval);
+            setGameState('typing');
             dialogue.innerHTML = "";
             let i = 0;
-            const interval = setInterval(() => {
+            typingInterval = setInterval(() => {
                 dialogue.innerHTML += text.charAt(i++);
                 if (i >= text.length) {
-                    clearInterval(interval);
-                    gameState = 'menu';
+                    clearInterval(typingInterval);
+                    setGameState('menu');
                     if (next) setTimeout(next, 800);
                 }
             }, 30);
@@ -191,17 +375,55 @@
 
         function openMsg(msg) {
             if (gameState !== 'menu') return;
+            typeWriter setInterval(() => {
+                dialogue.innerHTML += text.charAt(i++);
+                if (i >= text.length) {
+                    clearInterval(interval);
+                    // Só libera o menu se não houver um próximo passo imediato (como turno do inimigo)
+                    if (!next) {
+                        gameState = 'menu';
+                        updateButtonVisuals();
+                    } else {
+                        setTimeout(next, 800);
+                    }
+                }
+            }, 30);
+        }
+
+        function openMsg(msg) {
             typeWriter(msg, startEnemyTurn);
         }
 
         // --- ATAQUE DO JOGADOR ---
         let sliderPos = 0, sliderActive = false;
+        function startAttackMiniGame() {
+            gameState = 'attacking';
+            updateButtonVisuals();
+            attackUi.style.display = 'flex';
+(msg, startEnemyTurn);
+        }
+
+        // --- ATAQUE JOGADOR ---
+        let sliderPos = 0, sliderActive = false;
         function startAttackMenu() {
             if (gameState !== 'menu') return;
-            gameState = 'attacking';
-            document.getElementById('attack-ui').style.display = 'flex';
-            sliderPos = 0; sliderActive = true;
+            setGameState('attacking');
+            document.getElementById('attack-ui').style.display            sliderPos = 0; sliderActive = true;
+            
             const anim = setInterval(() => {
+                if (!sliderActive) return clearInterval(anim);
+                sliderPos += 8;
+                if (sliderPos > 370) {
+                    clearInterval(anim);
+                    stopAttack(0);
+                }
+                slider = 'flex';
+            sliderPos = 0; sliderActive = true;
+            const anim = setInterval(()Line.style.left = sliderPos + 'px';
+            }, 20);
+        }
+
+         => {
                 if (!sliderActive) return clearInterval(anim);
                 sliderPos += 8;
                 if (sliderPos > 370) { stopAttack(0); clearInterval(anim); }
@@ -209,46 +431,105 @@
             }, 20);
         }
 
-        window.addEventListener('keydown', e => {
-            if ((e.key === 'z' || e.key === 'Enter') && sliderActive) stopAttack(sliderPos);
+        function stopAttack(pos) {
+            if (!sliderActive && pos !== 0) return;
+            sliderActive = false;
+            attackUi.style.display = 'none';
+            
+            let dist = Math.abs(190 - pos);
+            let dmg = dist < 25 ? 25 : (dist <window.addEventListener('keydown', e => {
+            if ((e.key === 'z' || e.key 90 ? 12 : 0);
+            enemyHp -= dmg;
+            enemyHpFill.style === 'Enter') && sliderActive) stopAttack(sliderPos);
         });
 
-        function stopAttack(pos) {
+        function stopAttack(pos.width = Math.max(0, (enemyHp/maxEnemyHp*100)) + "%";) {
             sliderActive = false;
             document.getElementById('attack-ui').style.display = 'none';
             let dist = Math.abs(190 - pos);
-            let dmg = dist < 25 ? 25 : (dist < 90 ? 12 : 0);
-            enemyHp -= dmg;
-            enemyHpFill.style.width = Math.max(0, (enemyHp/maxEnemyHp*100)) + "%";
-            typeWriter(`* Você desferiu ${dmg} de dano!`, () => {
+            let dmg = dist <
+            
+            typeWriter(`* Dano causado: ${dmg}!`, () => {
                 if (enemyHp <= 0) win(); else startEnemyTurn();
             });
         }
 
-        // --- ATAQUES DO INIMIGO ---
+        window.addEventListener('keydown 25 ? 25 : (dist < 90 ? 12 : 0);
+            enemyHp -= dmg;
+            enemyHpFill.style.width = Math.max(0, (enemyHp/', e => {
+            if ((e.key === 'z' || e.key === 'Enter') &&maxEnemyHp*100)) + "%";
+            typeWriter(`* Dano causado: ${dmg}! gameState === 'attacking' && sliderActive) {
+                stopAttack(sliderPos);
+            }
+        });
+
+`, () => {
+                if (enemyHp <= 0) win(); else startEnemyTurn();
+            });        // --- ATAQUES DO INIMIGO ---
         function startEnemyTurn() {
             clearAllAttacks();
-            gameState = 'enemy_turn';
+
+        }
+
+        // --- ATAQUES INIMIGO ---
+        function startEnemyTurn() {
+            clear            gameState = 'enemy_turn';
+            updateButtonVisuals();
             dialogue.innerHTML = "";
-            soul.style.display = 'block';
-            soulX = 192; soulY = 82;
+AllAttacks();
+            setGameState('enemy_turn');
+            dialogue.innerHTML = "";
+            soul            soul.style.display = 'block';
+            soulX = 192; soulY = .style.display = 'block';
+            soulX = 192; soulY = 8282;
             
             const attacks = [rotatingBeamAttack, gravitySlamAttack, neonWallAttack];
             attacks[Math.floor(Math.random() * attacks.length)]();
             
-            activeIntervals.push(setTimeout(endTurn, 8500));
+            activeInterval;
+            
+            const attacks = [rotatingBeamAttack, gravitySlamAttack, neonWallAttack];
+            attacks[Math.floor(Math.random() * attacks.length)]();
+            
+            const endTimer = setTimeout(ends.push(setTimeout(endTurn, 8500));
         }
 
-        // 1. LASER GIRATÓRIO NEON
+        function clearAllAttacks() {
+            document.querySelectorAll('.attack-obj:not(#rotating-beam)').forEach(el => elTurn, 8500);
+            activeIntervals.push(endTimer);
+        }
+
+        .remove());
+            activeIntervals.forEach(clearInterval);
+            activeIntervals = [];
+            rotatingBeam.style.display = 'none';
+            rotatingBeam.className = 'attack-obj';
+            soul.style.filter = "none";
+        }
+
         function rotatingBeamAttack() {
             rotatingBeam.style.display = 'block';
             rotatingBeam.classList.add('beam-warning');
-            let angle = 0;
-            let lethal = false;
+            let angle =function rotatingBeamAttack() {
+            rotatingBeam.style.display = 'block';
+            rotatingBeam.classList.add('beam-warning');
+            let angle = 0, lethal = false;
+            setTimeout(() => { lethal = true; rotatingBeam.className = 'attack-obj beam-active'; }, 1500);
+            const rotate = setInterval(() => {
+                angle += 4.5;
+                rotatingBeam.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+                if (le 0, lethal = false;
 
             setTimeout(() => {
                 lethal = true;
-                rotatingBeam.classList.remove('beam-warning');
+                rotatingBeam.classListthal) {
+                    let cx = 200, cy = 90, sx = soulX + 8, sy = soulY + 8;
+                    let rad = angle * (Math.PI / 180);
+                    let dist = Math.abs((sx - cx) * Math.sin(rad) - (sy - cy) * Math.cos(rad));
+                    if (dist < 18) takeDamage(1.5);
+                }
+            }, 20);
+            activeIntervals.push(.remove('beam-warning');
                 rotatingBeam.classList.add('beam-active');
             }, 1500);
 
@@ -258,31 +539,41 @@
                 if (lethal) {
                     let cx = 200, cy = 90;
                     let sx = soulX + 8, sy = soulY + 8;
-                    let rad = angle * (Math.PI / 180);
+                    let rad =rotate);
+        }
+
+        function neonWallAttack() {
+            const pattern = setInterval(() => {
+                let angle * (Math.PI / 180);
                     let dist = Math.abs((sx - cx) * Math.sin(rad) - (sy - cy) * Math.cos(rad));
-                    if (dist < 18) takeDamage(1.5);
+                    if type = Math.random() > 0.5 ? 'blue' : 'orange';
+                const wall = (dist < 18) takeDamage(1.5);
                 }
-            }, 20);
+            }, 20); document.createElement('div');
+                wall.className = 'attack-obj ' + type;
+                wall.
             activeIntervals.push(rotate);
         }
 
-        // 2. PAREDES NEON AZUL/LARANJA (CORRIGIDO)
         function neonWallAttack() {
-            const pattern = setInterval(() => {
-                let type = Math.random() > 0.5 ? 'blue' : 'orange';
+            conststyle.width = '35px'; wall.style.height = '180px';
+                wall pattern = setInterval(() => {
+                let type = Math.random() > 0.5 ? 'blue' :.style.left = '400px'; wall.style.top = '0';
+                document.getElementById('box 'orange';
                 const wall = document.createElement('div');
-                wall.className = 'attack-obj ' + type;
-                wall.style.width = '35px'; wall.style.height = '180px';
-                wall.style.left = '400px'; wall.style.top = '0';
+                wall.className = 'attack-obj').appendChild(wall);
+                let wx = 400;
+                const m = setInterval(() => { ' + type;
+                wall.style.width = '35px'; wall.style.height = '
+                    wx -= 7; wall.style.left = wx + 'px';
+                    if (wx <180px';
+                wall.style.left = '400px'; wall.style.top soulX + 12 && wx + 23 > soulX) {
+                        if (type === ' = '0';
                 box.appendChild(wall);
-
                 let wx = 400;
                 const m = setInterval(() => {
-                    wx -= 7;
-                    wall.style.left = wx + 'px';
-                    
-                    // Colisão com margem de segurança (10px)
-                    if (wx < soulX + 10 && wx + 25 > soulX) {
+                    wx -= 7; wall.style.left = wx + 'px';
+                    if (wx < soulX + 12 && wx + 23 > soulX) {
                         if (type === 'blue' && isMoving) takeDamage(3);
                         if (type === 'orange' && !isMoving) takeDamage(3);
                     }
@@ -292,39 +583,95 @@
             activeIntervals.push(pattern);
         }
 
-        // 3. SLAM DE GRAVIDADE
+        function gravitySlamAttack() {
+blue' && isMoving) takeDamage(3);
+                        if (type === 'orange' && !isMoving) takeDamage(3);
+                    }
+                    if (wx < -50) { wall.remove(); clearInterval(m); }
+                }, 20);
+            }, 1000);
+            activeIntervals.push(pattern);
+        }
+
         function gravitySlamAttack() {
             soul.style.filter = "hue-rotate(150deg) drop-shadow(0 0 5px #008cff)";
             let slams = 0;
             const slam = setInterval(() => {
                 if (slams++ >= 5) return clearInterval(slam);
                 const d = ['t','b','l','r'][Math.floor(Math.random()*4)];
-                if(d==='t') soulY=0; if(d==='b') soulY=164; if(d==='l') soulX=0; if(d==='r') soulX=384;
-                
+                if(d==='t')            soul.style.filter = "hue-rotate(150deg) drop-shadow(0 0 soulY=0; if(d==='b') soulY=164; if(d===' 5px #008cff)";
+            let slams = 0;
+            const slam = setIntervall') soulX=0; if(d==='r') soulX=384;
                 const warn = document.createElement('div');
                 warn.className = 'attack-obj blaster-warning';
                 if(d==='t'||d==='b'){ warn.style.width='400px'; warn.style.height='40px'; warn.style.left='0'; warn.style.top=(d==='t'?'0':'140px'); }
                 else { warn.style.width='40px'; warn.style.height='180px'; warn.style.top='0'; warn.style.left=(d==='l'?'0':'360px'); }
-                box.appendChild(warn);
-
+                document.getElementById('box').appendChild(warn);
                 setTimeout(() => {
                     warn.remove();
                     const spike = document.createElement('div');
                     spike.className = 'attack-obj spike-attack';
                     spike.style.width=warn.style.width; spike.style.height=warn.style.height;
                     spike.style.left=warn.style.left; spike.style.top=warn.style.top;
-                    box.appendChild(spike);
-                    if (checkCollision(soul, spike)) takeDamage(15);
+                    document.getElementById('box').appendChild(spike);
+                    if (checkCollision(soul, spike)) takeDamage(() => {
+                if (slams++ >= 5) return clearInterval(slam);
+                const d = ['t','b','l','r'][Math.floor(Math.random()*4)];
+                if(d==='t') soulY=0; if(d==='b') soulY=164; if(d==='l') soulX=0; if(d==='r') soulX=384;
+                const warn = document.createElement('div');
+                warn.className = 'attack-obj blaster-warning';
+                if(d==='t'||d==='b'){ warn.style.width='400px'; warn.style.height='40px'; warn.style.left='0'; warn.style.top=(d==='t'?'0':'140px'); }
+                else { warn.style.width='40px'; warn.style.height='180px'; warn.style.top='0'; warn.style.left=(d==='l'?'0':'360px'); }
+                box.appendChild(warn);
+                setTimeout(() => {
+                    warn.remove();
+                    const spike = document.createElement('div');
+                    spike.className = 'attack-obj spike-attack';
+                    spike.style(15);
+                    setTimeout(() => spike.remove(), 400);
+                }, 80.width=warn.style.width; spike.style.height=warn.style.height;
+                    spike0);
+            }, 1400);
+            activeIntervals.push(slam);
+        }.style.left=warn.style.left; spike.style.top=warn.style.top;
+
+
+        function checkCollision(el1, el2) {
+            const r1 = el1.getBoundingClientRect                    box.appendChild(spike);
+                    if (checkCollision(soul, spike)) takeDamage(15);();
+            const r2 = el2.getBoundingClientRect();
+            return !(r1.right < r2
                     setTimeout(() => spike.remove(), 400);
                 }, 800);
-            }, 1400);
+            .left + 5 || r1.left > r2.right - 5 || r1.bottom <}, 1400);
             activeIntervals.push(slam);
         }
 
-        function checkCollision(el1, el2) {
+        function check r2.top + 5 || r1.top > r2.bottom - 5);
+        }Collision(el1, el2) {
             const r1 = el1.getBoundingClientRect();
             const r2 = el2.getBoundingClientRect();
-            return !(r1.right < r2.left + 5 || r1.left > r2.right - 5 || r1.bottom < r2.top + 5 || r1.top > r2.bottom - 5);
+            return !(r1.right < r2.left + 
+
+        function takeDamage(amt) {
+            playerHp -= amt;
+            hpFill.style.width = (playerHp/maxHp*100) + "%";
+            hpText.innerText = Math.max(0, Math.floor(playerHp)) + " / 50";
+            if (playerHp <= 0) die();
+        }
+
+        function endTurn() {
+            clearAllAttacks();
+            setGameState('menu');
+            soul.style.display = 'none';
+            typeWriter("* A resenha 👀 observa cada movimento seu.");
+        }
+
+        function die() { clearAllAttacks(); setGameState('dead'); document.getElementById('game-over').style.display = 'flex'; }
+        function win() { clearAllAttacks(); setGameState('win'); typeWriter("* VOCÊ VENCEU!"); }
+
+        // CONTROLES
+5 || r1.left > r2.right - 5 || r1.bottom < r2.top + 5 || r1.top > r2.bottom - 5);
         }
 
         function takeDamage(amt) {
@@ -336,16 +683,16 @@
 
         function endTurn() {
             clearAllAttacks();
-            gameState = 'menu';
             soul.style.display = 'none';
-            typeWriter("* A resenha 👀 parece estar se divertindo.");
+            typeWriter("* A resenha não acabou.");
         }
 
         function die() { clearAllAttacks(); gameState='dead'; document.getElementById('game-over').style.display = 'flex'; }
-        function win() { clearAllAttacks(); typeWriter("* VOCÊ VENCEU!"); document.getElementById('enemy-img').style.opacity='0'; }
+        function win() { clearAllAttacks(); gameState='win'; dialogue.innerHTML = "* VOCÊ VENCEU!"; document.getElementById('enemy-img').style.opacity='0'; }
 
         // CONTROLES
         window.addEventListener('keydown', e => { keys[e.key] = true; isMoving = true; });
+                window.addEventListener('keydown', e => { keys[e.key] = true; isMoving = true; });
         window.addEventListener('keyup', e => { 
             keys[e.key] = false; 
             if (!Object.values(keys).some(v => v)) isMoving = false;
@@ -354,12 +701,22 @@
         setInterval(() => {
             if (gameState === 'enemy_turn') {
                 const s = 4.5;
-                if (keys['ArrowUp'] || keys['w']) soulY -= s;
+                if (keys['ArrowUp'] || keys['w']) soulY -= s;window.addEventListener('keyup', e => { 
+            keys[e.key] = false; 
+            
                 if (keys['ArrowDown'] || keys['s']) soulY += s;
-                if (keys['ArrowLeft'] || keys['a']) soulX -= s;
-                if (keys['ArrowRight'] || keys['d']) soulX += s;
-                soulX = Math.max(0, Math.min(384, soulX));
-                soulY = Math.max(0, Math.min(164, soulY));
+                if (keysif (!Object.values(keys).some(v => v)) isMoving = false;
+        });
+
+        ['ArrowLeft'] || keys['a']) soulX -= s;
+                if (keys['ArrowRight'] ||setInterval(() => {
+            if (gameState === 'enemy_turn') {
+                const s = 4. keys['d']) soulX += s;
+                soulX = Math.max(0, Math.min(5;
+                if (keys['ArrowUp'] || keys['w']) soulY -= s;
+                if384, soulX));
+                soulY = Math.max(0, Math.min(16 (keys['ArrowDown'] || keys['s']) soulY += s;
+                if (keys['ArrowLeft4, soulY));
                 soul.style.left = soulX + 'px';
                 soul.style.top = soulY + 'px';
             }
@@ -369,8 +726,18 @@
             if (gameState !== 'menu') return;
             playerHp = 50;
             hpFill.style.width = "100%";
-            hpText.innerText = "50 / 50";
-            typeWriter("* Tomou Sucu do Istilitiru. HP FULL!", startEnemyTurn);
+            hpText.innerText = "50 / '] || keys['a']) soulX -= s;
+                if (keys['ArrowRight'] || keys['d']) soulX += s;
+                soulX = Math.max(0, Math.min(384, soulX));
+                soulY = Math.max(0, Math.min(164, soulY));
+                soul.style.left = soulX + 'px';
+                soul.style.top =50";
+            typeWriter("* Tomou Sucu do Istilitiru. HP FULL!", startEnemyTurn); soulY + 'px';
+            }
+        }, 20);
+
+        function useItem() {
+
         }
     </script>
 </body>
